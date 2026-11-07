@@ -281,7 +281,7 @@ def show_startup_details(startup):
     st.subheader(startup)
     temp_df = df[df['startup'] == startup]
     st.header(":rainbow[Key Performance Indicators]")
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
 
     with col1:
         total_invested = np.round(temp_df['amount(Cr)'].sum(), 2)
@@ -290,78 +290,81 @@ def show_startup_details(startup):
     with col2:
         highest_investment = np.round(temp_df['amount(Cr)'].max(), 2)
         st.metric("Highest Investment", f"₹ {highest_investment} Cr")
-
-    st.divider()
-
-    st.header(":rainbow[General Information]")
-    col3, col4, col5 = st.columns(3)
-
+        
     with col3:
-        st.subheader("Sub Verticals")
-        sub_verticals = list(temp_df['sub vertical'].dropna().unique())
-        st.write(", ".join(sub_verticals))
+        valid_investments = temp_df[temp_df['amount(Cr)'] > 0]
+        avg_investment = np.round(valid_investments['amount(Cr)'].mean(), 2) if not valid_investments.empty else 0
+        st.metric("Average Ticket Size", f"₹ {avg_investment} Cr")
 
-    with col4:
-        st.subheader("Locations")
-        location = list(temp_df['city'].dropna().unique())
-        st.write(", ".join(location))
+    st.subheader(":rainbow[Top Investors by Participation]")
+    
+    investors_series = temp_df['investors'].dropna().str.split(',').explode().str.strip()
+    investor_counts = investors_series.value_counts().reset_index()
+    investor_counts.columns = ['Investor', 'Number of Rounds']
+    
+    if not investor_counts.empty:
+       fig_investors = px.bar(
+       investor_counts.head(5), 
+       x='Investor', 
+       y='Number of Rounds',
+       color=np.arange(5).astype(str)
+       ,color_discrete_sequence=px.colors.sequential.Viridis
+       )
 
-    with col5:
-        st.subheader("Investors")
-        def refine(lst):
-            for i in range(len(lst)):
-                lst[i] = lst[i].strip()
-            return lst
+       fig_investors.update_traces(
+           hovertemplate="<b>Investor: </b>%{x}<br><b>Sales: </b>%{y}<extra></extra>"
+       )
+       
+       fig_investors.update_layout(
+        plot_bgcolor="white",
+        paper_bgcolor="white",
+        font_color="black",
 
-        investors_who_invested = set(temp_df['investors'].dropna().str.strip().str.split(',').apply(refine).sum())
-        st.write(", ".join(list(investors_who_invested)))
-
-    st.divider()
+        xaxis=dict(
+        title=dict(text="<b>Investor</b>", font=dict(color="black")),
+        tickfont=dict(color="black"),
+        linecolor="black",
+        ticks="outside",
+        tickcolor="black",
+        ),
+        yaxis=dict(
+        title=dict(text="<b>Number of Rounds</b>", font=dict(color="black")),
+        tickfont=dict(color="black"),
+        linecolor="black",
+        ticks="outside",
+        tickcolor="black",
+        gridcolor="#e5e5e5",
+        ),
+        )
+       st.plotly_chart(fig_investors)
+    else:
+        st.warning("No investor data available to display")  
 
     st.header(":rainbow[Investment Analytics]")
     col1,_ = st.columns([3,1])
     with col1:
-       st.subheader("Year-over-Year Investment")
+       st.subheader("•Year-over-Year Investment")
 
        if 'year' not in temp_df.columns:
            temp_df['year'] = pd.to_datetime(temp_df['date']).dt.year
 
        yearly_investment = temp_df.groupby('year')['amount(Cr)'].sum()
     
-       fig1, ax1 = plt.subplots(figsize=(3, 2))
+       fig1, ax1 = plt.subplots(figsize=(7, 4))
        ax1.plot(yearly_investment.index, yearly_investment.values, marker='o', color='red')
-       ax1.set_xlabel('Year')
-       ax1.set_ylabel('Investment(Cr)')
-       ax1.grid(True, linestyle='--', color='blue', alpha=0.4)
+       ax1.set_xlabel('Year',fontweight='bold' ,fontsize=12)
+       ax1.set_ylabel('Investment(Cr)' ,fontweight='bold',fontsize=12)
+       ax1.grid(True, linestyle='--', color='blue', alpha=0.3)
     
        st.pyplot(fig1 ,use_container_width=True)
 
-    col2 ,_ = st.columns([3,1])
-    with col2:
-        st.subheader("Investment by Vertical")
-        vertical_investment = temp_df.groupby('vertical')['amount(Cr)'].sum()
-
-        if not vertical_investment.empty and vertical_investment.sum() > 0:
-            fig2, ax2 = plt.subplots(figsize=(3, 3))
-            n = len(vertical_investment.values)
-            colors = plt.get_cmap("cool")(np.linspace(0.15, 0.85, n))
-            ax2.pie(
-                vertical_investment.values, 
-                labels=vertical_investment.index, 
-                autopct='%1.1f%%', 
-                colors=colors, 
-                startangle=90, 
-                wedgeprops={"edgecolor": "white", "linewidth": 1.5}
-            )
-            st.pyplot(fig2)  
-        else:
-            st.warning("No investment data available to display")
-
+    st.subheader("•Verical Based total investment")
     if(temp_df.shape[0] > 4):
-        st.header("• Verical Based total investment")
         fig = px.pie(temp_df,names='vertical' ,values='amount(Cr)',hole=0.2 ,width=600 ,height=450,
           color_discrete_sequence=px.colors.sequential.RdBu)
         st.plotly_chart(fig ,use_container_width=True)
+    else:
+        st.warning("No investment data available to display")
 
 
 st.sidebar.title(':rainbow[Startup Funding Analysis]')
