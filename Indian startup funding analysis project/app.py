@@ -144,9 +144,6 @@ def overall_load():
     )
     st.plotly_chart(fig, use_container_width=True)
 
-
-
-
 # investor details 
 def investor_details(investor):
     st.title(investor)
