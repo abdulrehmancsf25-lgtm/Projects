@@ -12,7 +12,6 @@ temp_inves = sorted(set(temp_inves))
 for i in range(len(temp_inves)):
     temp_inves[i] = temp_inves[i].strip()
 
-
 # overall analysis
 
 def overall_load():
