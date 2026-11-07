@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import plotly.express as px
 
 st.set_page_config(page_title='Startup Analysis')
-df = pd.read_csv('C:/Users/Lenovo/Desktop/Python/Project1/cleaned_data.csv')
+df = pd.read_csv('cleaned_data.csv')
 df['date'] = pd.to_datetime(df['date'])
 temp_inves = df['investors'].str.strip().str.title().str.split(',').sum()
 temp_inves = sorted(set(temp_inves))
