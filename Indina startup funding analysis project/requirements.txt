@@ -1,0 +1,5 @@
+pandas 
+plotly.express
+plotlt.grpah_objects
+numpy
+matplotlib
