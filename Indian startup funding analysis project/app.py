@@ -365,24 +365,59 @@ def show_startup_details(startup):
 
 
 st.sidebar.title(':rainbow[Startup Funding Analysis]')
-option = st.sidebar.selectbox(':rainbow[Select One]' , options=['Overall Analysis' , 'Startups' , 'Investors'])
+option = st.sidebar.selectbox(':rainbow[Select One]' , options=['Home', 'Overall Analysis' , 'Startups' , 'Investors'])
 
-if option == 'Overall Analysis':
+if option == 'Home':
+    st.title(':rainbow[Welcome to the Indian Startup Ecosystem 🇮🇳]')
+    st.markdown("""
+    This dashboard provides a comprehensive analysis of the Indian startup funding landscape. 
+    Navigate through the sidebar to uncover insights about market trends, individual startups, and top investors.
+    """)
+    st.write("---") 
+    
+    st.subheader(':rainbow[Ecosystem at a Glance]')
+    total_investment = round(df['amount(Cr)'].sum())
+    highest_funded = round(df['amount(Cr)'].max())
+    total_startups = df['startup'].nunique()
+    
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric(label="Total Capital Invested", value=f"₹{total_investment:,} Cr")
+    with col2:
+        st.metric(label="Highest Single Funding", value=f"₹{highest_funded:,} Cr")
+    with col3:
+        st.metric(label="Total Unique Startups", value=f"{total_startups:,}")
+        
+    st.write("---")
+    st.subheader(':rainbow[What would you like to explore?]')
+    
+    colA, colB, colC = st.columns(3)
+    with colA:
+        st.info('**📈 Overall Analysis**\n\nDiscover macroeconomic trends, year-over-year investments, and top sectors.')
+    with colB:
+        st.success('**🚀 Startups Analysis**\n\nSearch for specific startups to view their KPIs, investors, and funding rounds.')
+    with colC:
+        st.warning('**🤝 Investors Analysis**\n\nExamine top investors, their portfolio choices, and funding patterns.')
+
+    st.markdown("<br><p style='text-align: center; color: gray;'>👈 <i>Select an option from the sidebar to begin your analysis</i></p>", unsafe_allow_html=True)
+
+elif option == 'Overall Analysis':
     btn1 = st.sidebar.checkbox('Show  Details')
     st.title(':rainbow[Overall Analysis]')
     if btn1:
-      overall_load()
+        overall_load()
+
 elif option ==  'Startups':
     st.title('Startups Analysis')
     startup = st.sidebar.selectbox(':rainbow[Select Startup]' , options=sorted([s for s in df['startup'].dropna().unique() if str(s).title() not in temp_inves]))
     btn1 = st.sidebar.button('Find Startup Details')
     if btn1:
         show_startup_details(startup)
-elif option == 'Investors':
 
+elif option == 'Investors':
     investor = st.sidebar.selectbox(':rainbow[Select Investor]' , options=temp_inves)
     btn2 = st.sidebar.button('Find Investor Details')
     if btn2:
         investor_details(investor)
     else:
-            st.title('Investors Analysis')
+        st.title('Investors Analysis')
