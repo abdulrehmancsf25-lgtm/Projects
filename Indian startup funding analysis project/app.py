@@ -10,6 +10,7 @@ csv_path = os.path.join(current_dir, 'cleaned_data.csv')
 df = pd.read_csv(csv_path)
 st.set_page_config(page_title='Startup Analysis')
 df['date'] = pd.to_datetime(df['date'])
+df = df[df['amount(Cr)'] != 0]
 temp_inves = df['investors'].str.strip().str.title().str.split(',').sum()
 temp_inves = sorted(set(temp_inves))
 for i in range(len(temp_inves)):
@@ -302,7 +303,7 @@ def show_startup_details(startup):
     investor_counts = investors_series.value_counts().reset_index()
     investor_counts.columns = ['Investor', 'Number of Rounds']
     
-    if not investor_counts.empty:
+    if not investor_counts.empty and investors_series.shape[0] >1:
        fig_investors = px.bar(
        investor_counts.head(5), 
        x='Investor', 
